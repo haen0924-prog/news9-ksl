@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나도 뉴스 수어통역사! - 영상 저장</title>
+<style>
+  :root { --bg:#0b1a3a; --card:#13285a; --accent:#1a7fe8; --text:#fff; --sub:rgba(255,255,255,.65); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:linear-gradient(160deg,#0b1a3a,#0d2a5a); color:var(--text); font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:24px 16px 40px; }
+  .festival { color:var(--sub); font-size:13px; letter-spacing:3px; margin-bottom:6px; }
+  h1 { font-size:24px; margin-bottom:18px; }
+  h1 span { color:#4a9eff; }
+  video { width:100%; max-width:520px; border-radius:12px; border:2px solid rgba(255,255,255,.4); background:#000; }
+  #btn-save { margin-top:18px; width:100%; max-width:520px; padding:16px; border:none; border-radius:40px; background:var(--accent); color:#fff; font-size:18px; font-weight:bold; cursor:pointer; }
+  #btn-save:disabled { background:#555; }
+  #status { margin-top:10px; font-size:14px; color:var(--sub); text-align:center; min-height:20px; }
+  .help { margin-top:18px; width:100%; max-width:520px; background:rgba(255,255,255,.08); border-radius:12px; padding:14px 16px; font-size:14px; line-height:1.7; color:var(--sub); }
+  .help b { color:#fff; }
+</style>
+</head>
+<body>
+  <div class="festival">2026 강원수어문화제</div>
+  <h1>나도 뉴스 <span>수어통역사!</span></h1>
+  <video id="v" controls playsinline></video>
+  <button id="btn-save" disabled>영상 불러오는 중...</button>
+  <div id="status"></div>
+  <div class="help">
+    <b>아이폰</b>: 버튼 → 아래에서 <b>"비디오 저장"</b>을 누르면 사진 앱에 저장돼요.<br>
+    <b>안드로이드</b>: 버튼을 누르면 바로 다운로드돼요. (갤러리 또는 '내 파일 → 다운로드')
+  </div>
+<script>
+(function(){
+  var url = new URLSearchParams(location.search).get('v');
+  var v = document.getElementById('v'), btn = document.getElementById('btn-save'), st = document.getElementById('status');
+  if (!url) { btn.textContent = '영상 주소가 없습니다'; return; }
+  v.src = url;
+  var name = 'NEWS9_' + (url.split('/').pop().split('?')[0] || 'video.mp4');
+  var file = null;
+  fetch(url).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+    .then(function(b){
+      file = new File([b], name, { type: b.type || 'video/mp4' });
+      btn.disabled = false; btn.textContent = '📥 내 폰에 저장하기';
+    })
+    .catch(function(){ btn.disabled = false; btn.textContent = '📥 내 폰에 저장하기'; });
+  btn.onclick = function(){
+    if (file && navigator.canShare && navigator.canShare({ files:[file] })) {
+      navigator.share({ files:[file] }).catch(function(e){ if (e.name !== 'AbortError') fallback(); });
+    } else fallback();
+  };
+  function fallback(){
+    var a = document.createElement('a');
+    a.href = url + (url.indexOf('?')>=0 ? '&' : '?') + 'download=' + encodeURIComponent(name);
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    st.textContent = '다운로드를 시작했어요.';
+  }
+})();
+</script>
+</body>
+</html>
