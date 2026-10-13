@@ -43,8 +43,11 @@
       btn.disabled = false; btn.textContent = '📥 내 폰에 저장하기';
     })
     .catch(function(){ btn.disabled = false; btn.textContent = '📥 내 폰에 저장하기'; });
+  // 아이폰/아이패드만 공유 메뉴("비디오 저장")를 쓰고, 안드로이드·PC는 바로 다운로드
+  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  if (!isIOS) document.getElementById('btn-save').setAttribute('data-mode','download');
   btn.onclick = function(){
-    if (file && navigator.canShare && navigator.canShare({ files:[file] })) {
+    if (isIOS && file && navigator.canShare && navigator.canShare({ files:[file] })) {
       navigator.share({ files:[file] }).catch(function(e){ if (e.name !== 'AbortError') fallback(); });
     } else fallback();
   };
@@ -52,7 +55,7 @@
     var a = document.createElement('a');
     a.href = url + (url.indexOf('?')>=0 ? '&' : '?') + 'download=' + encodeURIComponent(name);
     a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    st.textContent = '다운로드를 시작했어요.';
+    st.innerHTML = '다운로드를 시작했어요.<br>화면 위·아래 알림이나 <b>내 파일 → 다운로드</b>에서 확인하세요.';
   }
 })();
 </script>
